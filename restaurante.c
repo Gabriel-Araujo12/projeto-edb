@@ -7,10 +7,23 @@
 //------------------------SALÃO------------------------//
 
 
-// Adiciona um prato a lista de pedidos pendentes
-void adicionar_salao(No **cabeca, int novo_dado){
+// Adiciona um prato ao pedido
+void adicionar_prato(Pedido *pedido, int id){
+    if(pedido->qntd == MAX){
+        printf("\n-> Não é possível adicionar mais pratos.\n");
+    }
+
+    else{
+        pedido->pratos[pedido->qntd] = id;
+        pedido->qntd++;
+    }
+}
+
+
+// Adiciona um pedido a lista de pedidos pendentes
+void adicionar_pedido(No **cabeca, Pedido pedido){
     No *novo_no = malloc(sizeof(No));
-    novo_no->dado = novo_dado;
+    novo_no->pedido = pedido;
     novo_no->proximo = NULL;
 
     if(*cabeca == NULL){
@@ -30,63 +43,8 @@ void adicionar_salao(No **cabeca, int novo_dado){
 }
 
 
-// Remove o primeito prato da lista de pedidos pendentes
-void remover_inicio(No **cabeca){
-    if(*cabeca == NULL){
-        printf("\n-> A lista de pedidos está vazia!\n");
-        return;
-    }
-
-    No *temp = *cabeca;
-    *cabeca = (*cabeca)->proximo;
-
-    if(*cabeca != NULL){
-        (*cabeca)->anterior = NULL;
-    }
-
-    free(temp);
-}
-
-
-// Remove o último prato da lista de pedidos pendentes
-void remover_fim(No **cabeca){
-    if(*cabeca == NULL){
-        printf("\n-> A lista de pedidos está vazia!\n");
-        return;
-    }
-
-    No *aux = *cabeca;
-    while(aux->proximo != NULL){
-        aux = aux->proximo;
-
-    }
-
-    No *temp = aux;
-    aux = aux->anterior; 
-    if(aux == NULL){
-        *cabeca = NULL;
-    }
-
-    else{
-        aux->proximo = NULL;
-    }
-
-    free(temp);
-}
-
-
-// Remove um prato que esteja no meio da lista de pedidos pendentes
-void remover_salao(No **cabeca, int posicao){
-    if(*cabeca == NULL){
-        printf("\n-> A lista de pedidos está vazia!\n");
-        return;
-    }
-
-    if(posicao < 0){
-        printf("\n-> Posição inválida!\n");
-        return;
-    }
-
+// Remove um prato de um pedido na lista de pendentes
+void remover_prato(No **cabeca, int posicao){
     No *aux = *cabeca;
     int cont = 0;
 
@@ -96,47 +54,47 @@ void remover_salao(No **cabeca, int posicao){
     }
 
     if(aux == NULL){
-        printf("\n-> Posição inválida!\n");
+        printf("\n-> Pedido inválido.\n");
         return;
     }
 
-    else if(aux == *cabeca){
-        remover_inicio(cabeca);
-        printf("\n-> Pedido removido.\n");
+    int pos_prato;
+    printf("\nQual a posição do prato que deseja remover? ");
+    scanf("%d", &pos_prato);
+    pos_prato = pos_prato - 1;
+
+    if(pos_prato < 0 || pos_prato >= aux->pedido.qntd){
+        printf("\n-> Prato inválido.\n");
         return;
     }
 
-    else if(aux->proximo == NULL){
-        remover_fim(cabeca);
-        printf("\n-> Pedido removido.\n");
-        return;
+    for(int i = pos_prato; i < aux->pedido.qntd - 1; i++){
+        aux->pedido.pratos[i] = aux->pedido.pratos[i + 1];
     }
 
-    else{
-        aux->anterior->proximo = aux->proximo;
-        aux->proximo->anterior = aux->anterior;
-        printf("\n-> Pedido removido.\n");
-    }
-
-    free(aux);
+    aux->pedido.qntd--;
+    
+    printf("\n-> Prato removido do pedido.\n");
 }
 
 
 // Lista todos os pedidos pendentes no salão
 void listar_salao(No *cabeca) {
     if(cabeca == NULL){
-        printf("\n-> A lista de pedidos está vazia!\n");
+        printf("\n-> A lista de pedidos está vazia.\n");
         return;
     }
 
     No *aux = cabeca;
-    printf("\n");
     while(aux != NULL){
-        printf("%d | ", aux->dado);
+        printf("\n|");
+        for(int i = 0; i < aux->pedido.qntd; i++){
+            printf("| %d |", aux->pedido.pratos[i]);
+        }
+
+        printf("|\n");
         aux = aux->proximo;
     }
-
-    printf("\n");
 }
 
 
@@ -151,40 +109,42 @@ void inicializar_fila(Fila* fila){
 
 // Verifica se a fila de processamento está vazia
 int fila_vazia(Fila* fila){
-  return fila->tamanho == 0;
+    return fila->tamanho == 0;
 }
 
 
 // Verifica se a fila de processamento está cheia
 int fila_cheia(Fila* fila){
-  return fila->tamanho == MAX;
+    return fila->tamanho == MAX;
 }
 
 
 // Transfere o primeiro pedido da lista de pendentes para o processamento
-void adicionar_cozinha(No **cabeca, Fila* fila){
+void processar_pedido(No **cabeca, Fila* fila){
     if(fila_cheia(fila)){
-        printf("\n-> A fila de processamento está cheia!\n");
+        printf("\n-> A fila de processamento está cheia.\n");
     }
 
     else{
         if(*cabeca == NULL){
-            printf("\n-> A lista de pedidos está vazia!\n");
+            printf("\n-> A lista de pedidos está vazia.\n");
             return;
         }
 
         No *temp = *cabeca;
-        int valor = temp->dado;
         *cabeca = (*cabeca)->proximo;
 
         if(*cabeca != NULL){
             (*cabeca)->anterior = NULL;
         }
 
-        free(temp);
+        for(int i = 0; i < temp->pedido.qntd; i++){
+            fila->dados[fila->tamanho] = temp->pedido.pratos[i];
+            fila->tamanho++;
+        }
 
-        fila->dados[fila->tamanho] = valor;
-        fila->tamanho++;
+        printf("\n-> Pedido processado.\n");
+        free(temp);
     }
 }
 
@@ -192,16 +152,16 @@ void adicionar_cozinha(No **cabeca, Fila* fila){
 // Lista todos os pedidos em processamento na cozinha
 void listar_cozinha(Fila* fila){
     if(fila_vazia(fila)){
-        printf("\n-> A fila de processamento está vazia!\n");
+        printf("\n-> A fila de processamento está vazia.\n");
     }
 
     else{
-        printf("\n");
-        
+        printf("\n|");
+
         for(int i = 0; i < fila->tamanho; i++){
-            printf("%d | ", fila->dados[i]);
+            printf("| %d |", fila->dados[i]);
         }
 
-        printf("\n");
+        printf("|\n");
     }
 }
