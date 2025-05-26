@@ -168,7 +168,6 @@ int main(){
             scanf("%d", &num);
             num = num - 1;
             remover_salao(&cabeca, num);
-            printf("\n-> Pedido removido.\n");
         }
 
         else if(num == 4){

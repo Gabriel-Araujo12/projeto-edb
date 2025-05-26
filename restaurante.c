@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "restaurante.h"
 
 
@@ -95,18 +96,23 @@ void remover_salao(No **cabeca, int posicao){
         return;
     }
 
-    if(aux == *cabeca){
+    else if(aux == *cabeca){
         remover_inicio(cabeca);
+        printf("\n-> Pedido removido.\n");
         return;
     }
 
-    if (aux->proximo == NULL) {
+    else if(aux->proximo == NULL){
         remover_fim(cabeca);
+        printf("\n-> Pedido removido.\n");
         return;
     }
 
-    aux->anterior->proximo = aux->proximo;
-    aux->proximo->anterior = aux->anterior;
+    else{
+        aux->anterior->proximo = aux->proximo;
+        aux->proximo->anterior = aux->anterior;
+        printf("\n-> Pedido removido.\n");
+    }
 
     free(aux);
 }

@@ -1,8 +1,6 @@
 #ifndef RESTAURANTE_H
 #define RESTAURANTE_H
 
-#include <stdbool.h>
-
 #define MAX 100
 
 struct no{
